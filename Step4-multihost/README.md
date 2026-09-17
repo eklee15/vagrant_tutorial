@@ -18,15 +18,15 @@ Vagrant.configure("2") do |config|
       :ssh_port => '2200'
     },
     {
-      :hostname => "Server2",
+      :hostname => "vm2",
       :box      => "bento/ubuntu-24.04",
       :ip       => "172.16.10.51",
       :ssh_port => '2201'
     },
     {
-      :hostname => "Server3",
+      :hostname => "vm3",
       :box      => "bento/ubuntu-24.04",
-      :ip       => "192.168.56.102",
+      :ip       => "172.16.10.52",
       :ssh_port => '2202'
     }
   ]
@@ -86,9 +86,9 @@ Example output:
 ```
 current machine states:
 
-vm1      running (virtualbox)
-Server2  running (virtualbox)
-Server3  running (virtualbox)
+vm1  running (virtualbox)
+vm2  running (virtualbox)
+vm3  running (virtualbox)
 ```
 
 ---
@@ -99,17 +99,99 @@ Use the hostname to pick which one:
 
 ```bash
 vagrant ssh vm1
-vagrant ssh Server2
-vagrant ssh Server3
+vagrant ssh vm2
+vagrant ssh vm3
 ```
+
+---
+
+## VM-to-VM Communication
+
+All three VMs are connected to the same private network (`172.16.10.0/24`), which means they can communicate directly with each other **without** going through your host machine.
+
+### Understanding the Network Setup
+
+Each VM has:
+- A **private IP address** (defined in the Vagrantfile)
+- **SSH port forwarding** (so you can SSH from your host)
+
+| VM | Private IP | SSH Port (from host) |
+|----|-----------|----------------------|
+| vm1 | 172.16.10.50 | 2200 |
+| vm2 | 172.16.10.51 | 2201 |
+| vm3 | 172.16.10.52 | 2202 |
+
+### SSH Directly Between VMs
+
+You can SSH from one VM to another using their private IP addresses:
+
+**From your host, SSH into vm1:**
+```bash
+vagrant ssh vm1
+```
+
+**Inside vm1, SSH to vm2 using its private IP:**
+```bash
+ssh vagrant@172.16.10.51
+```
+
+**Or SSH to vm3:**
+```bash
+ssh vagrant@172.16.10.52
+```
+
+When prompted for a password, enter `vagrant` (the default Vagrant password).
+
+### Example: Multi-VM Communication Chain
+
+1. SSH into vm1 from your host:
+   ```bash
+   vagrant ssh vm1
+   ```
+
+2. From vm1, ping vm2 to verify connectivity:
+   ```bash
+   ping -c 3 172.16.10.51
+   ```
+
+3. SSH from vm1 to vm2:
+   ```bash
+   ssh vagrant@172.16.10.51
+   ```
+
+4. From vm2, you can reach vm1 or vm3:
+   ```bash
+   ssh vagrant@172.16.10.50    # to vm1
+   ssh vagrant@172.16.10.52    # to vm3
+   ```
+
+5. Test connectivity:
+   ```bash
+   ping -c 3 172.16.10.50    # ping vm1 from vm2
+   ping -c 3 172.16.10.52    # ping vm3 from vm2
+   ```
+
+### SSH Key-Based Authentication (Optional)
+
+To avoid typing passwords, you can set up SSH key-based authentication. Inside any VM:
+
+```bash
+# Generate a key (if you don't have one)
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+
+# Copy it to another VM
+ssh-copy-id -i ~/.ssh/id_rsa.pub vagrant@172.16.10.51
+```
+
+Now you can SSH without a password!
 
 ---
 
 ## Stop or destroy one VM
 
 ```bash
-vagrant halt Server2       # stop just Server2
-vagrant destroy Server3    # delete just Server3
+vagrant halt vm2       # stop just vm2
+vagrant destroy vm3    # delete just vm3
 ```
 
 Or stop/destroy all at once:
