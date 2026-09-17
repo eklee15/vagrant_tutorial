@@ -1,0 +1,14 @@
+Vagrant.configure("2") do |config|
+  config.vm.box      = "bento/ubuntu-24.04"
+  config.vm.hostname = "options-vm"
+  config.vm.network "private_network", ip: "172.16.10.11"
+
+  config.vm.synced_folder "./data", "/home/vagrant/data"
+
+  config.vm.provision "file", source: "./welcome.txt", destination: "/home/vagrant/welcome.txt"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 2048
+    vb.cpus   = 2
+  end
+end
