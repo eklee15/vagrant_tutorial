@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
       :hostname => "vm1",
       :box      => "bento/ubuntu-24.04",
       :ip       => "172.16.10.50",
-      :ssh_port => '22'
+      :ssh_port => '2200'
     },
     {
       :hostname => "Server2",

@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
           :hostname => "vm1",
           :box => "bento/ubuntu-24.04",
           :ip => "172.16.10.50",
-          :ssh_port => '22'
+          :ssh_port => '2200'
         },
         {
           :hostname => "Server2",
@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
             node.vm.hostname = machine[:hostname]
             node.vm.network :private_network, ip: machine[:ip]
             node.vm.network "forwarded_port", guest: 22, host: machine[:ssh_port], id: "ssh"
-            node.vm.synced_folder "../data", "/home/vagrant/data"
+            node.vm.synced_folder "./data", "/home/vagrant/data"
             node.vm.provision "file", source: "./copiedfile.txt", destination: "/home/vagrant/copiedfile.txt"
 
             node.vm.provider :virtualbox do |vb|
