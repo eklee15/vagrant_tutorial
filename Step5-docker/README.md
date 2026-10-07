@@ -6,6 +6,8 @@ In this step you will:
 3. Clone a simple web server project
 4. Build and run it as a Docker container
 5. Open it in your browser from your Mac
+6. Tag the image and push it to Docker Hub
+7. Pull the image back down on any machine
 
 ---
 
@@ -159,7 +161,81 @@ You should see the web server's homepage.
 
 ---
 
-## 7. Stop and Clean Up (Optional)
+## 7. Push the Image to Docker Hub
+
+Docker Hub is a free public registry at [hub.docker.com](https://hub.docker.com). Pushing your image there lets you pull it on any machine — no need to rebuild.
+
+### 7a. Create a Docker Hub account
+
+If you don't have one yet, sign up for free at [https://hub.docker.com](https://hub.docker.com).
+Your username will be used in all image names, e.g. `yourname/my-webserv-test`.
+
+### 7b. Log in to Docker Hub from the VM
+
+```bash
+docker login
+```
+
+Enter your Docker Hub **username** and **password** when prompted.
+
+You should see: `Login Succeeded`
+
+### 7c. Tag the image
+
+Docker Hub requires images to be named `<your-dockerhub-username>/<image-name>:<tag>`.
+
+Replace `yourname` with your actual Docker Hub username:
+
+```bash
+docker tag my-webserv-test yourname/my-webserv-test:v1
+```
+
+**Verify the tag was created:**
+```bash
+docker images
+```
+
+You should now see both `my-webserv-test` and `yourname/my-webserv-test` in the list.
+
+### 7d. Push the image
+
+```bash
+docker push yourname/my-webserv-test:v1
+```
+
+Docker will upload each layer. When it finishes you will see a digest line like:
+```
+latest: digest: sha256:abc123... size: 1234
+```
+
+Your image is now live at: `https://hub.docker.com/r/yourname/my-webserv-test`
+
+---
+
+## 8. Pull the Image on Another Machine
+
+You can now pull and run this image anywhere Docker is installed — another VM, a server, a colleague's laptop.
+
+**Log in (if not already):**
+```bash
+docker login
+```
+
+**Pull the image:**
+```bash
+docker pull yourname/my-webserv-test:v1
+```
+
+**Run it:**
+```bash
+docker run -d -p 80:80 --name webserv-container yourname/my-webserv-test:v1
+```
+
+> You do **not** need the source code or `Dockerfile` on the new machine — the image contains everything.
+
+---
+
+## 9. Stop and Clean Up (Optional)
 
 When you are done, you can stop and remove the container:
 
@@ -194,6 +270,10 @@ vagrant halt
 | Remove a container | `docker rm webserv-container` |
 | List images | `docker images` |
 | Remove an image | `docker rmi my-webserv-test` |
+| Log in to Docker Hub | `docker login` |
+| Tag an image | `docker tag my-webserv-test yourname/my-webserv-test:v1` |
+| Push image to Docker Hub | `docker push yourname/my-webserv-test:v1` |
+| Pull image from Docker Hub | `docker pull yourname/my-webserv-test:v1` |
 | Halt the VM | `vagrant halt` |
 
 ---
